@@ -31,6 +31,11 @@ def countries():
     return list(data.keys())
 
 
+@app.get('/countries/{country}')
+def cities(country: str):
+    return list(data[country].keys())
+
+
 @app.get('/countries/{country}/{city}/{month}')
 def monthly_average(country: str, city: str, month: str):
     return data[country][city][month]
@@ -39,3 +44,21 @@ def monthly_average(country: str, city: str, month: str):
 openapi_schema = app.openapi()
 with open(join(wellknown_path, "openapi.json"), "w") as f:
     json.dump(openapi_schema, f)
+
+
+# Test with Spain
+if __name__ == "__main__":
+    from fastapi.testclient import TestClient
+    
+    client = TestClient(app)
+    
+    # Test cities in Spain
+    response = client.get("/countries/Spain")
+    print(f"Cities in Spain: {response.json()}")
+    
+    # Test monthly average for a city in Spain
+    cities_in_spain = response.json()
+    if cities_in_spain:
+        city = cities_in_spain[0]
+        response = client.get(f"/countries/Spain/{city}/January")
+        print(f"January average for {city}, Spain: {response.json()}")
